@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Stratégie Frontalier 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:           #0B1623;
+  --surface:      #112030;
+  --surface-hover:#152840;
+  --gold:         #D4A843;
+  --gold2:        #F0CC78;
+  --gold-dim:     rgba(212,168,67,0.10);
+  --gold-border:  rgba(212,168,67,0.22);
+  --success:      #2DC98A;
+  --danger:       #E85D50;
+  --muted:        #6B82A0;
+  --white:        #F0EDE8;
+  --radius:       14px;
+  --shadow:       0 4px 24px rgba(0,0,0,0.35);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'Outfit',sans-serif; background:var(--bg); color:var(--white); min-height:100vh; }
+
+/* subtle bg gradient */
+body::before { content:''; position:fixed; inset:0; background:radial-gradient(ellipse 70% 50% at 15% 10%, rgba(212,168,67,0.04) 0%, transparent 60%), radial-gradient(ellipse 50% 40% at 85% 90%, rgba(212,168,67,0.03) 0%, transparent 60%); pointer-events:none; z-index:0; }
+
+.wrap { max-width:1360px; margin:0 auto; padding:28px 36px; position:relative; z-index:1; }
+
+/* ── TOPBAR ── */
+.topbar { display:flex; justify-content:flex-end; align-items:center; gap:8px; margin-bottom:16px; }
+.tb-btn { display:inline-flex; align-items:center; gap:6px; background:var(--surface); border:1px solid var(--gold-border); border-radius:8px; padding:6px 14px; font-family:'Outfit',sans-serif; font-size:11px; font-weight:500; color:var(--muted); cursor:pointer; transition:all .15s; }
+.tb-btn:hover { border-color:var(--gold); color:var(--gold2); background:var(--gold-dim); }
+.tb-btn svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+/* ── EDIT PANEL ── */
+.edit-panel { display:none; background:var(--surface); border:1px solid var(--gold-border); border-radius:var(--radius); padding:20px 24px; margin-bottom:20px; }
+.edit-panel.open { display:block; animation:slideDown .25s ease; }
+@keyframes slideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+.edit-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:12px; }
+.edit-field { display:flex; flex-direction:column; gap:4px; }
+.edit-field label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:.8px; }
+.edit-field input { background:var(--bg); border:1px solid var(--gold-border); border-radius:7px; padding:7px 10px; font-family:'Outfit',sans-serif; font-size:13px; font-weight:600; color:var(--gold2); width:100%; outline:none; transition:border-color .15s; }
+.edit-field input:focus { border-color:var(--gold); }
+.edit-title { font-family:'Cormorant Garamond',serif; font-size:14px; font-weight:600; color:var(--gold2); }
+
+/* ── HEADER ── */
+.header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:22px; padding-bottom:20px; border-bottom:1px solid var(--gold-border); }
+.tag { display:inline-flex; align-items:center; gap:7px; background:var(--gold-dim); border:1px solid var(--gold-border); border-radius:30px; padding:4px 14px; font-size:10px; font-weight:600; color:var(--gold2); letter-spacing:1.4px; text-transform:uppercase; margin-bottom:10px; }
+.tag-dot { width:6px; height:6px; background:var(--success); border-radius:50%; animation:blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+h1 { font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:700; line-height:1.2; }
+h1 em { font-style:normal; color:var(--gold); }
+.header-desc { font-size:11px; color:var(--muted); margin-top:5px; }
+.header-pills { display:flex; gap:10px; }
+.pill { background:var(--surface); border:1px solid var(--gold-border); border-radius:10px; padding:10px 18px; text-align:center; box-shadow:var(--shadow); }
+.pill .lbl { font-size:9px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); }
+.pill .val { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:700; color:var(--gold2); margin-top:2px; }
+
+/* ── FILTERS ── */
+.filters { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:12px 16px; background:var(--surface); border:1px solid var(--gold-border); border-radius:var(--radius); margin-bottom:24px; box-shadow:var(--shadow); }
+.flbl { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-weight:600; white-space:nowrap; }
+.fsep { width:1px; height:22px; background:var(--gold-border); margin:0 4px; }
+.fbtn { background:transparent; border:1px solid rgba(255,255,255,0.08); border-radius:7px; padding:5px 13px; font-family:'Outfit',sans-serif; font-size:11px; font-weight:500; color:var(--muted); cursor:pointer; transition:all .15s; white-space:nowrap; }
+.fbtn:hover { border-color:var(--gold-border); color:var(--white); }
+.fbtn.on { background:var(--gold-dim); border-color:var(--gold); color:var(--gold2); font-weight:600; }
+.filter-summary { margin-left:auto; font-size:10px; color:var(--muted); font-style:italic; }
+
+/* ── SECTION LABEL ── */
+.slbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:2px; color:var(--gold); display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+.slbl .snum { width:20px; height:20px; border-radius:50%; background:var(--gold-dim); border:1px solid var(--gold); color:var(--gold); font-size:10px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.slbl::after { content:''; flex:1; height:1px; background:var(--gold-border); }
+
+/* ── CARD ── */
+.card { background:var(--surface); border:1px solid var(--gold-border); border-radius:var(--radius); padding:22px; box-shadow:var(--shadow); transition:border-color .2s; }
+.card:hover { border-color:rgba(212,168,67,0.4); }
+.ctitle { font-family:'Cormorant Garamond',serif; font-size:15px; font-weight:600; margin-bottom:3px; }
+.csub { font-size:10px; color:var(--muted); margin-bottom:16px; }
+
+/* ── GAUGES ── */
+.gauges-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px; }
+.gauge-center { display:flex; flex-direction:column; align-items:center; }
+.gauge-track { fill:none; stroke:rgba(255,255,255,0.06); stroke-width:16; stroke-linecap:round; }
+.gauge-fill { fill:none; stroke-linecap:round; stroke-dasharray:314.16; transition:stroke-dashoffset 1s cubic-bezier(.4,0,.2,1); }
+.gauge-fill.gold { stroke:var(--gold); }
+.gauge-fill.gold2 { stroke:var(--gold2); }
+.gauge-fill.done { stroke:var(--success); }
+.g-val { font-family:'Cormorant Garamond',serif; font-size:2.8rem; font-weight:700; fill:var(--white); text-anchor:middle; transition:all .3s; }
+.g-sub { font-size:11px; fill:var(--muted); text-anchor:middle; }
+.g-lbl { font-size:9px; fill:var(--muted); }
+.progress { width:100%; height:5px; background:rgba(255,255,255,0.06); border-radius:4px; overflow:hidden; margin-top:12px; }
+.progress-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold2)); border-radius:4px; transition:width 1s cubic-bezier(.4,0,.2,1); }
+.prog-lbl { font-size:10px; color:var(--muted); margin-top:6px; text-align:center; }
+.prog-lbl b { color:var(--gold2); }
+
+/* ── LEVEL 2 ── */
+.l2-grid { display:grid; grid-template-columns:300px 1fr; gap:16px; margin-bottom:24px; }
+.big-num { font-family:'Cormorant Garamond',serif; font-size:3.8rem; font-weight:700; text-align:center; line-height:1; transition:all .3s; }
+.big-num span { font-size:1.4rem; color:var(--muted); font-family:'Outfit',sans-serif; font-weight:300; }
+.t-detail { font-size:11px; color:var(--muted); text-align:center; margin-top:5px; }
+.t-bar-wrap { width:100%; height:8px; background:rgba(255,255,255,0.06); border-radius:6px; overflow:hidden; margin:14px 0 6px; position:relative; }
+.t-bar-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold2)); border-radius:6px; transition:width 1s cubic-bezier(.4,0,.2,1); }
+/* target marker at 50% */
+.t-bar-wrap::after { content:''; position:absolute; top:-3px; left:50%; width:2px; height:calc(100% + 6px); background:rgba(255,255,255,0.25); border-radius:1px; }
+.t-scale { display:flex; justify-content:space-between; font-size:9px; color:var(--muted); }
+.t-badge { display:block; text-align:center; margin-top:12px; padding:6px 14px; border-radius:20px; font-size:11px; font-weight:600; border:1px solid var(--gold); color:var(--gold2); background:var(--gold-dim); transition:all .3s; }
+.t-badge.ok { border-color:var(--success); color:var(--success); background:rgba(45,201,138,0.1); }
+
+/* bar chart */
+.chart-legend { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+.leg { display:flex; align-items:center; gap:5px; font-size:10px; color:var(--muted); }
+.leg-sq { width:9px; height:9px; border-radius:2px; flex-shrink:0; }
+.note-bar { padding:7px 10px; background:rgba(212,168,67,0.06); border:1px solid var(--gold-border); border-radius:6px; font-size:10px; color:var(--muted); margin-bottom:10px; }
+.bar-row { display:flex; align-items:center; gap:8px; margin-bottom:7px; cursor:default; }
+.bar-row:hover .bar-stack { filter:brightness(1.12); }
+.bar-wk { font-size:10px; color:var(--muted); width:22px; flex-shrink:0; font-weight:600; }
+.bar-stack { flex:1; height:24px; border-radius:5px; overflow:hidden; display:flex; background:rgba(255,255,255,0.03); transition:filter .15s; position:relative; }
+.bseg { height:100%; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:rgba(255,255,255,0.85); overflow:hidden; min-width:0; transition:width .6s cubic-bezier(.4,0,.2,1); }
+.bar-tot { font-size:10px; color:var(--muted); width:16px; text-align:right; flex-shrink:0; font-weight:600; }
+
+/* ── LEVEL 3 ── */
+.l3-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-bottom:24px; }
+.metric-row { display:flex; align-items:center; gap:12px; padding:11px 0; border-bottom:1px solid rgba(255,255,255,0.05); transition:opacity .2s; }
+.metric-row:last-child { border-bottom:none; }
+.m-ico { width:36px; height:36px; border-radius:9px; background:var(--gold-dim); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.m-lbl { font-size:10px; color:var(--muted); }
+.m-val { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:700; line-height:1.1; transition:all .3s; }
+.m-delta { font-size:10px; color:var(--success); }
+.fmt-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+.fmt-name { font-size:10px; color:var(--muted); width:78px; flex-shrink:0; }
+.fmt-outer { flex:1; height:20px; background:rgba(255,255,255,0.04); border-radius:5px; overflow:hidden; }
+.fmt-inner { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold2)); border-radius:5px; display:flex; align-items:center; padding-left:8px; font-size:9px; font-weight:700; color:rgba(255,255,255,0.85); transition:width .8s cubic-bezier(.4,0,.2,1); }
+.fmt-n { width:24px; text-align:right; font-size:10px; font-weight:700; color:var(--gold2); flex-shrink:0; }
+.insight { margin-top:12px; padding:9px 11px; background:var(--gold-dim); border:1px solid var(--gold-border); border-radius:8px; font-size:10px; color:var(--gold2); line-height:1.5; }
+
+/* ── TEAM ── */
+.team-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+.team-card { background:var(--surface); border:1px solid var(--gold-border); border-radius:var(--radius); padding:18px; text-align:center; box-shadow:var(--shadow); transition:transform .2s, border-color .2s; }
+.team-card:hover { transform:translateY(-2px); border-color:rgba(212,168,67,0.4); }
+.avatar { width:64px; height:64px; border-radius:50%; background:var(--gold-dim); border:1.5px solid var(--gold); margin:0 auto 10px; font-size:1.8rem; display:flex; align-items:center; justify-content:center; }
+.adv-name { font-family:'Cormorant Garamond',serif; font-size:15px; font-weight:700; }
+.adv-role { font-size:9px; color:var(--muted); margin-bottom:10px; line-height:1.4; }
+.adv-stat { font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:700; color:var(--gold); }
+.adv-stat-lbl { font-size:9px; color:var(--muted); }
+.adv-bar-wrap { height:4px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; margin-top:10px; }
+.adv-bar-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold2)); border-radius:3px; }
+.adv-posts { display:inline-block; margin-top:6px; font-size:9px; padding:2px 8px; border-radius:10px; background:var(--gold-dim); border:1px solid var(--gold-border); color:var(--gold2); }
+
+/* ── BONUS ── */
+.bonus-card { background:var(--gold-dim); border:1px solid var(--gold); border-radius:var(--radius); padding:20px 26px; display:flex; align-items:center; gap:20px; margin-bottom:24px; box-shadow:0 4px 30px rgba(212,168,67,0.12); transition:all .4s; }
+.bonus-card.unlocked { background:rgba(45,201,138,0.08); border-color:var(--success); box-shadow:0 4px 30px rgba(45,201,138,0.15); }
+.bonus-ico { font-size:2.2rem; flex-shrink:0; }
+.bonus-title { font-family:'Cormorant Garamond',serif; font-size:1.2rem; font-weight:700; color:var(--gold2); }
+.bonus-card.unlocked .bonus-title { color:var(--success); }
+.bonus-desc { font-size:10px; color:var(--muted); margin-top:3px; max-width:480px; line-height:1.5; }
+.bonus-bar-wrap { flex:1; height:7px; background:rgba(255,255,255,0.07); border-radius:5px; overflow:hidden; margin-top:10px; }
+.bonus-bar-fill { height:100%; background:linear-gradient(90deg,var(--gold),var(--gold2)); border-radius:5px; transition:width 1s cubic-bezier(.4,0,.2,1); }
+.bonus-card.unlocked .bonus-bar-fill { background:linear-gradient(90deg,var(--success),#5EF0C0); }
+.bonus-right { margin-left:auto; text-align:center; flex-shrink:0; }
+.bonus-amount { font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:700; color:var(--gold); transition:color .4s; }
+.bonus-card.unlocked .bonus-amount { color:var(--success); }
+.bonus-cond { font-size:9px; color:var(--muted); }
+.bonus-status { font-size:10px; font-weight:600; color:var(--gold2); margin-top:4px; transition:color .4s; }
+.bonus-card.unlocked .bonus-status { color:var(--success); }
+
+/* ── TOOLTIP ── */
+.tooltip { position:fixed; background:#0B1623; border:1px solid var(--gold-border); border-radius:8px; padding:7px 11px; font-size:10px; color:var(--white); pointer-events:none; z-index:1000; opacity:0; transition:opacity .15s; white-space:nowrap; box-shadow:0 4px 16px rgba(0,0,0,0.5); }
+.tooltip.show { opacity:1; }
+
+/* ── FOOTER ── */
+.footer { display:flex; justify-content:space-between; align-items:center; padding-top:18px; border-top:1px solid var(--gold-border); font-size:10px; color:var(--muted); }
+.footer-brand { font-family:'Cormorant Garamond',serif; font-size:1rem; font-weight:700; color:var(--gold); }
+.footer-date { color:var(--muted); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+.card, .team-card, .bonus-card { animation:fadeUp .45s ease both; }
+
+/* ── PRINT ── */
+@media print {
+  body { background:#fff; color:#000; }
+  body::before { display:none; }
+  .topbar, .tb-btn, .edit-panel { display:none !important; }
+  .filters { border:1px solid #ccc; background:#f8f8f8; }
+  .fbtn { border:1px solid #ccc; color:#555; }
+  .fbtn.on { background:#f0e8d0; border-color:#c9a84c; color:#8a6d1a; }
+  .card, .team-card, .bonus-card { background:#fff; border:1px solid #ddd; box-shadow:none; break-inside:avoid; }
+  .pill { background:#f8f8f8; border:1px solid #ddd; }
+  h1, .ctitle, .adv-name, .footer-brand { color:#1a2a3a; }
+  h1 em { color:#c9a84c; }
+  .slbl { color:#c9a84c; }
+  .slbl::after { background:#ddd; }
+  .slbl .snum { border-color:#c9a84c; color:#c9a84c; background:#fff8e8; }
+  .header { border-bottom:1px solid #ddd; }
+  .footer { border-top:1px solid #ddd; }
+  .header-desc, .csub, .m-lbl, .adv-role, .adv-stat-lbl, .bar-wk, .bar-tot, .muted, .flbl { color:#666; }
+  .pill .val, .m-val, .big-num, .adv-stat, .bonus-amount, .fmt-n, .prog-lbl b { color:#c9a84c; }
+  .gauge-fill.gold { stroke:#c9a84c; }
+  .gauge-fill.gold2 { stroke:#e0b860; }
+  .gauge-track { stroke:#e5e5e5; }
+  .g-val { fill:#1a2a3a; }
+  .g-sub, .g-lbl { fill:#888; }
+  .progress-fill, .t-bar-fill, .fmt-inner, .adv-bar-fill, .bonus-bar-fill { background:#c9a84c; }
+  .bonus-card { background:#fff8e8; border:1px solid #c9a84c; box-shadow:none; }
+  .insight { background:#fff8e8; border:1px solid #e0c070; color:#8a6000; }
+  .note-bar { background:#f8f8f8; border:1px solid #ddd; }
+  .m-delta { color:#2a9a6a; }
+  .t-badge { background:#fff8e8; border:1px solid #c9a84c; color:#8a6000; }
+  .t-badge.ok { background:#e8fff4; border-color:#2a9a6a; color:#1a7a50; }
+  .tag { background:#fff8e8; border:1px solid #c9a84c; color:#8a6000; }
+  .footer-date { color:#888; }
+  @page { margin:15mm; size:A4 landscape; }
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1100px){ .l2-grid,.l3-grid { grid-template-columns:1fr 1fr; } .team-grid { grid-template-columns:1fr 1fr; } }
+@media(max-width:700px){ .gauges-row,.l2-grid,.l3-grid,.team-grid { grid-template-columns:1fr; } .wrap { padding:14px; } .header { flex-direction:column; gap:14px; } .header-pills { width:100%; justify-content:space-between; } .edit-grid { grid-template-columns:1fr 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <button class="tb-btn" onclick="toggleEdit()">
+    <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    Modifier les données
+  </button>
+  <button class="tb-btn" onclick="window.print()">
+    <svg viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Imprimer / PDF
+  </button>
+</div>
+
+<!-- EDIT PANEL -->
+<div class="edit-panel" id="editPanel">
+  <div class="edit-title">✏️ Saisie des données réelles — mis à jour en temps réel</div>
+  <div class="edit-grid">
+    <div class="edit-field"><label>Contrats signés</label><input type="number" id="inp-contracts" min="0" max="10" value="6" oninput="applyEdits()"></div>
+    <div class="edit-field"><label>Leads générés</label><input type="number" id="inp-leads" min="0" max="20" value="14" oninput="applyEdits()"></div>
+    <div class="edit-field"><label>Vues totales</label><input type="number" id="inp-views" min="0" value="14280" oninput="applyEdits()"></div>
+    <div class="edit-field"><label>Impressions</label><input type="number" id="inp-impressions" min="0" value="38540" oninput="applyEdits()"></div>
+    <div class="edit-field"><label>Abonnés gagnés</label><input type="number" id="inp-followers" min="0" value="312" oninput="applyEdits()"></div>
+    <div class="edit-field"><label>CTR LinkedIn (%)</label><input type="text" id="inp-ctrli" value="8,1" oninput="applyEdits()"></div>
+    <div class="edit-field"><label>CTR Facebook (%)</label><input type="text" id="inp-ctrfb" value="5,2" oninput="applyEdits()"></div>
+    <div class="edit-field"><label>CTR Instagram (%)</label><input type="text" id="inp-ctrig" value="4,1" oninput="applyEdits()"></div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <div class="tag"><span class="tag-dot"></span>Dashboard · Mémoire de Fin d'Études</div>
+    <h1>Stratégie Contenu <em>Frontalier</em><br>Mai → Juillet 2026</h1>
+    <div class="header-desc">Assurance mutuelle frontalière · Agence locale · Suisse / France · LinkedIn · Facebook · Instagram</div>
+  </div>
+  <div class="header-pills">
+    <div class="pill"><div class="lbl">Semaine</div><div class="val" id="hWeek">S6 / S8</div></div>
+    <div class="pill"><div class="lbl">Avancement</div><div class="val" id="hProg">75%</div></div>
+    <div class="pill"><div class="lbl">Posts publiés</div><div class="val" id="hPosts">12</div></div>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters">
+  <span class="flbl">Réseau :</span>
+  <button class="fbtn on" data-group="net" data-val="all">Tous</button>
+  <button class="fbtn" data-group="net" data-val="li">LinkedIn</button>
+  <button class="fbtn" data-group="net" data-val="fb">Facebook</button>
+  <button class="fbtn" data-group="net" data-val="ig">Instagram</button>
+  <div class="fsep"></div>
+  <span class="flbl">Format :</span>
+  <button class="fbtn on" data-group="fmt" data-val="all">Tous</button>
+  <button class="fbtn" data-group="fmt" data-val="video">Vidéo</button>
+  <button class="fbtn" data-group="fmt" data-val="interview">Interview</button>
+  <button class="fbtn" data-group="fmt" data-val="edu">Éducatif</button>
+  <button class="fbtn" data-group="fmt" data-val="photo">Photo</button>
+  <div class="fsep"></div>
+  <span class="flbl">Semaines :</span>
+  <button class="fbtn on" data-group="wk" data-val="all">Toutes</button>
+  <button class="fbtn" data-group="wk" data-val="1">S1 → S4</button>
+  <button class="fbtn" data-group="wk" data-val="2">S5 → S8</button>
+</div>
+
+  <span class="filter-summary" id="filterSummary">Affichage : tous réseaux · tous formats · toutes semaines</span>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip"></div>
+
+<!-- NIVEAU 1 -->
+<div class="slbl"><span class="snum">1</span>Vue Stratégique — Objectifs SMART</div>
+<div class="gauges-row">
+
+  <div class="card">
+    <div class="ctitle">Contrats signés</div>
+    <div class="csub">Objectif final : 10 contrats d'assurance mutuelle frontalière</div>
+    <div class="gauge-center">
+      <svg viewBox="0 0 260 150" width="240">
+        <path class="gauge-track" d="M 30 130 A 100 100 0 0 1 230 130"/>
+        <path class="gauge-fill gold" id="gContracts" d="M 30 130 A 100 100 0 0 1 230 130" stroke-dashoffset="125.66"/>
+        <text class="g-val" x="130" y="108" id="gContractsVal">6</text>
+        <text class="g-sub" x="130" y="126">/ 10 contrats</text>
+        <text class="g-lbl" x="24" y="146">0</text>
+        <text class="g-lbl" x="218" y="146">10</text>
+      </svg>
+      <div class="progress" style="max-width:220px"><div class="progress-fill" id="pbContracts" style="width:60%"></div></div>
+      <div class="prog-lbl">Progression : <b id="pctContracts">60%</b> — <span id="remContracts">4 contrats restants</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Opportunités générées</div>
+    <div class="csub">Objectif pipeline : 20 leads qualifiés (source CRM)</div>
+    <div class="gauge-center">
+      <svg viewBox="0 0 260 150" width="240">
+        <path class="gauge-track" d="M 30 130 A 100 100 0 0 1 230 130"/>
+        <path class="gauge-fill blue" id="gLeads" d="M 30 130 A 100 100 0 0 1 230 130" stroke-dashoffset="94.25"/>
+        <text class="g-val" x="130" y="108" id="gLeadsVal">14</text>
+        <text class="g-sub" x="130" y="126">/ 20 opportunités</text>
+        <text class="g-lbl" x="24" y="146">0</text>
+        <text class="g-lbl" x="218" y="146">20</text>
+      </svg>
+      <div class="progress" style="max-width:220px"><div class="progress-fill" id="pbLeads" style="width:70%"></div></div>
+      <div class="prog-lbl">Progression : <b id="pctLeads">70%</b> — <span id="remLeads">6 leads restants</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- NIVEAU 2 -->
+<div class="slbl"><span class="snum">2</span>Vue Analytique — Exécution & Efficacité</div>
+<div class="l2-grid">
+
+  <div class="card">
+    <div class="ctitle">Taux de transformation</div>
+    <div class="csub">Leads convertis en contrats signés</div>
+    <div class="big-num" id="tPct">42,8<span>%</span></div>
+    <div class="t-detail" id="tDetail">6 contrats ÷ 14 leads = 42,8%</div>
+    <div class="t-bar-wrap"><div class="t-bar-fill" id="tFill" style="width:85%"></div></div>
+    <div class="t-scale"><span>0%</span><span>25%</span><span>50% 🎯</span><span>75%</span><span>100%</span></div>
+    <div class="t-badge" id="tBadge">Objectif 50% — il manque 7,2 pts</div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Calendrier de publication</div>
+    <div class="csub">Posts réalisés par semaine · Objectif : 2 posts × 3 réseaux = 6/semaine</div>
+    <div class="chart-legend">
+      <div class="leg"><div class="leg-sq" style="background:#4A90C4"></div>LinkedIn</div>
+      <div class="leg"><div class="leg-sq" style="background:#6CA8D0"></div>Facebook</div>
+      <div class="leg"><div class="leg-sq" style="background:#9ECDE8"></div>Instagram</div>
+      <div class="leg"><div class="leg-sq" style="background:rgba(255,255,255,0.1);border:1px dashed rgba(255,255,255,0.2)"></div>Planifié</div>
+    </div>
+    <div class="note-bar">Objectif minimal : 2 posts par réseau · par semaine</div>
+    <div id="barChart"></div>
+  </div>
+
+</div>
+
+<!-- NIVEAU 3 -->
+<div class="slbl"><span class="snum">3</span>Vue Opérationnelle — Performance du contenu</div>
+<div class="l3-grid">
+
+  <div class="card">
+    <div class="ctitle">Vues & impressions</div>
+    <div class="csub" id="viewSub">Visibilité totale · toutes plateformes</div>
+    <div id="viewMetrics">
+      <div class="metric-row">
+        <div class="m-ico">👁</div>
+        <div><div class="m-lbl">Vues vidéo</div><div class="m-val" id="mViews">14 280</div><div class="m-delta">↑ +34% vs sem. préc.</div></div>
+      </div>
+      <div class="metric-row">
+        <div class="m-ico">📡</div>
+        <div><div class="m-lbl">Impressions</div><div class="m-val" id="mImpressions">38 540</div><div class="m-delta">↑ portée organique</div></div>
+      </div>
+      <div class="metric-row">
+        <div class="m-ico">👥</div>
+        <div><div class="m-lbl">Abonnés gagnés</div><div class="m-val" id="mFollowers">+312</div><div class="m-delta">↑ +24% base initiale</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Taux d'engagement (CTR)</div>
+    <div class="csub">Interactions ÷ impressions · Benchmark secteur : 3,2%</div>
+    <div id="ctrMetrics">
+      <div class="metric-row" id="rowLI">
+        <div class="m-ico">💼</div>
+        <div><div class="m-lbl">LinkedIn</div><div class="m-val" id="cLI">8,1%</div><div class="m-delta">× 2,5 le benchmark</div></div>
+      </div>
+      <div class="metric-row" id="rowFB">
+        <div class="m-ico">👍</div>
+        <div><div class="m-lbl">Facebook</div><div class="m-val" id="cFB">5,2%</div><div class="m-delta">× 1,6 le benchmark</div></div>
+      </div>
+      <div class="metric-row" id="rowIG">
+        <div class="m-ico">❤️</div>
+        <div><div class="m-lbl">Instagram</div><div class="m-val" id="cIG">4,1%</div><div class="m-delta">× 1,3 le benchmark</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ctitle">Performance par format</div>
+    <div class="csub" id="fmtSub">Leads générés selon le type de contenu</div>
+    <div id="fmtChart"></div>
+    <div class="insight" id="fmtInsight">💡 Les vidéos courtes génèrent 6× plus de leads que les photos. Priorité à ce format.</div>
+  </div>
+
+</div>
+
+<!-- TEAM -->
+<div class="slbl" style="color:var(--muted)"><span class="snum" style="background:rgba(107,130,160,0.1);border-color:var(--muted);color:var(--muted)">+</span>Équipe conseillère — Contributions individuelles</div>
+<div class="team-grid">
+  <div class="team-card">
+    <div class="avatar">👩‍💼</div>
+    <div class="adv-name">Sophie M.</div>
+    <div class="adv-role">Conseillère Senior · Référente contenu</div>
+    <div class="adv-stat">3</div>
+    <div class="adv-stat-lbl">contrats signés</div>
+    <div class="adv-posts">8 posts publiés</div>
+    <div class="adv-bar-wrap"><div class="adv-bar-fill" style="width:75%"></div></div>
+  </div>
+  <div class="team-card">
+    <div class="avatar">👨‍💼</div>
+    <div class="adv-name">Lucas T.</div>
+    <div class="adv-role">Conseiller · Spécialiste frontalier CH</div>
+    <div class="adv-stat">2</div>
+    <div class="adv-stat-lbl">contrats signés</div>
+    <div class="adv-posts">6 posts publiés</div>
+    <div class="adv-bar-wrap"><div class="adv-bar-fill" style="width:50%"></div></div>
+  </div>
+  <div class="team-card">
+    <div class="avatar">👩‍💻</div>
+    <div class="adv-name">Camille R.</div>
+    <div class="adv-role">Conseillère · Chargée réseaux sociaux</div>
+    <div class="adv-stat">1</div>
+    <div class="adv-stat-lbl">contrats signés</div>
+    <div class="adv-posts">10 posts publiés</div>
+    <div class="adv-bar-wrap"><div class="adv-bar-fill" style="width:30%"></div></div>
+  </div>
+  <div class="team-card">
+    <div class="avatar">👨‍🎓</div>
+    <div class="adv-name">Alexis V.</div>
+    <div class="adv-role">Alternant · Création de contenu</div>
+    <div class="adv-stat">0</div>
+    <div class="adv-stat-lbl">contrats signés</div>
+    <div class="adv-posts">5 posts publiés</div>
+    <div class="adv-bar-wrap"><div class="adv-bar-fill" style="width:10%"></div></div>
+  </div>
+</div>
+
+<!-- BONUS -->
+<div class="bonus-card" id="bonusCard">
+  <div class="bonus-ico" id="bonusIco">🏆</div>
+  <div style="flex:1">
+    <div class="bonus-title" id="bonusTitle">Prime collective · Chèque cadeau partagé</div>
+    <div class="bonus-desc">Débloqué dès que les 10 contrats sont signés. Cet indicateur transforme la jauge de contrats en levier de motivation collective pour toute l'équipe.</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:10px">
+      <div class="bonus-bar-wrap"><div class="bonus-bar-fill" id="bonusFill" style="width:60%"></div></div>
+      <span style="font-size:11px;font-weight:700;color:var(--gold2)" id="bonusPct">60%</span>
+      <span style="font-size:10px;color:var(--muted)" id="bonusRem">— 4 contrats pour débloquer</span>
+    </div>
+  </div>
+  <div class="bonus-right">
+    <div class="bonus-amount">500 €</div>
+    <div class="bonus-cond">Condition : 10 contrats signés</div>
+    <div class="bonus-status" id="bonusStatus">En cours ⏳</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div><div class="footer-brand">Dashboard Stratégie Frontalier 2026</div><div style="margin-top:2px">Architecture drill-down 3 niveaux · Mémoire de fin d'études · Assurance mutuelle frontalière</div></div>
+  <div class="footer-date" id="footerDate">Semaine 6 / 8 · <span style="color:var(--gold2);font-weight:600">75% de la campagne</span></div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ═══════════════════════════════════════════════════
+// DONNÉES — granulaires : chaque entrée porte réseau + format + semaine
+// Modifier les chiffres dans le panneau "Saisie" met à jour tout en temps réel
+// ═══════════════════════════════════════════════════
+
+const POSTS = [
+  {wk:1,net:'li',fmt:'video',posts:1},{wk:1,net:'li',fmt:'interview',posts:1},
+  {wk:1,net:'fb',fmt:'video',posts:1},{wk:1,net:'ig',fmt:'photo',posts:1},
+  {wk:2,net:'li',fmt:'video',posts:1},{wk:2,net:'li',fmt:'edu',posts:1},
+  {wk:2,net:'fb',fmt:'video',posts:1},{wk:2,net:'fb',fmt:'interview',posts:1},
+  {wk:2,net:'ig',fmt:'video',posts:1},{wk:2,net:'ig',fmt:'photo',posts:1},
+  {wk:3,net:'li',fmt:'interview',posts:1},{wk:3,net:'fb',fmt:'video',posts:1},
+  {wk:3,net:'fb',fmt:'edu',posts:1},{wk:3,net:'ig',fmt:'video',posts:1},
+  {wk:4,net:'li',fmt:'video',posts:1},{wk:4,net:'li',fmt:'interview',posts:1},
+  {wk:4,net:'fb',fmt:'video',posts:1},{wk:4,net:'fb',fmt:'interview',posts:1},
+  {wk:4,net:'ig',fmt:'video',posts:1},{wk:4,net:'ig',fmt:'edu',posts:1},
+  {wk:5,net:'li',fmt:'video',posts:1},{wk:5,net:'li',fmt:'interview',posts:1},
+  {wk:5,net:'fb',fmt:'video',posts:1},{wk:5,net:'ig',fmt:'video',posts:1},
+  {wk:5,net:'ig',fmt:'photo',posts:1},
+  {wk:6,net:'li',fmt:'video',posts:1},{wk:6,net:'li',fmt:'interview',posts:1},
+  {wk:6,net:'fb',fmt:'video',posts:1},{wk:6,net:'fb',fmt:'edu',posts:1},
+  {wk:6,net:'ig',fmt:'video',posts:1},{wk:6,net:'ig',fmt:'interview',posts:1},
+];
+
+const LEADS = [
+  {wk:1,net:'li',fmt:'video',contracts:0},
+  {wk:2,net:'li',fmt:'video',contracts:1},{wk:2,net:'fb',fmt:'video',contracts:0},{wk:2,net:'li',fmt:'interview',contracts:0},
+  {wk:3,net:'li',fmt:'video',contracts:1},{wk:3,net:'fb',fmt:'video',contracts:0},{wk:3,net:'ig',fmt:'video',contracts:0},
+  {wk:4,net:'li',fmt:'video',contracts:1},{wk:4,net:'li',fmt:'interview',contracts:1},{wk:4,net:'fb',fmt:'interview',contracts:0},
+  {wk:5,net:'li',fmt:'interview',contracts:1},{wk:5,net:'fb',fmt:'video',contracts:0},
+  {wk:6,net:'li',fmt:'video',contracts:1},{wk:6,net:'fb',fmt:'edu',contracts:1},
+];
+// Totaux globaux : 14 leads, 6 contrats ✓
+
+const VISIBILITY = {
+  all:{views:14280,impressions:38540,followers:312,ctrLI:'8,1%',ctrFB:'5,2%',ctrIG:'4,1%'},
+  li: {views:8282, impressions:22353,followers:181,ctrLI:'8,1%',ctrFB:null,  ctrIG:null  },
+  fb: {views:3856, impressions:10406,followers:84, ctrLI:null,  ctrFB:'5,2%',ctrIG:null  },
+  ig: {views:2142, impressions:5781, followers:47, ctrLI:null,  ctrFB:null,  ctrIG:'4,1%'},
+};
+
+const TARGETS = {contracts:10, leads:20};
+const WK_LBL  = {1:'S1',2:'S2',3:'S3',4:'S4',5:'S5',6:'S6',7:'S7',8:'S8'};
+
+// ── STATE ────────────────────────────────────────
+const state = {net:'all', fmt:'all', wk:'all'};
+
+// Override values from edit panel (null = use computed from LEADS)
+const overrides = {views:null, impressions:null, followers:null, ctrLI:null, ctrFB:null, ctrIG:null};
+
+// ── FILTER HELPERS ───────────────────────────────
+const filterLeads = () => LEADS.filter(l =>
+  (state.net==='all'||l.net===state.net) &&
+  (state.fmt==='all'||l.fmt===state.fmt) &&
+  (state.wk ==='all'||(state.wk==='1'?l.wk<=4:l.wk>4))
+);
+const filterPosts = () => POSTS.filter(p =>
+  (state.net==='all'||p.net===state.net) &&
+  (state.fmt==='all'||p.fmt===state.fmt) &&
+  (state.wk ==='all'||(state.wk==='1'?p.wk<=4:p.wk>4))
+);
+
+// ── FILTER WIRING ────────────────────────────────
+document.querySelectorAll('.fbtn').forEach(btn => {
+  btn.addEventListener('click', function(){
+    const g=this.dataset.group, v=this.dataset.val;
+    document.querySelectorAll(`.fbtn[data-group="${g}"]`).forEach(b=>b.classList.remove('on'));
+    this.classList.add('on');
+    state[g]=v;
+    render();
+  });
+});
+
+// ── EDIT PANEL ───────────────────────────────────
+function toggleEdit(){
+  const p=document.getElementById('editPanel');
+  p.classList.toggle('open');
+}
+function applyEdits(){
+  const gv = id => document.getElementById(id)?.value ?? '';
+  overrides.views       = parseInt(gv('inp-views'))       || null;
+  overrides.impressions = parseInt(gv('inp-impressions'))  || null;
+  overrides.followers   = parseInt(gv('inp-followers'))    || null;
+  overrides.ctrLI       = gv('inp-ctrli') ? gv('inp-ctrli')+'%' : null;
+  overrides.ctrFB       = gv('inp-ctrfb') ? gv('inp-ctrfb')+'%' : null;
+  overrides.ctrIG       = gv('inp-ctrig') ? gv('inp-ctrig')+'%' : null;
+  // Also override lead/contract totals globally
+  const c = parseInt(gv('inp-contracts'));
+  const l = parseInt(gv('inp-leads'));
+  if(!isNaN(c) && c>=0) overrides.contracts = c;
+  if(!isNaN(l) && l>=0) overrides.leads     = l;
+  render();
+}
+
+// ── MAIN RENDER ──────────────────────────────────
+function render(){
+  const leads     = filterLeads();
+  let nLeads      = leads.length;
+  let nContracts  = leads.reduce((s,l)=>s+l.contracts,0);
+
+  // Apply global overrides if edit panel was used & filters are "all"
+  if(state.net==='all'&&state.fmt==='all'&&state.wk==='all'){
+    if(overrides.contracts!=null) nContracts=overrides.contracts;
+    if(overrides.leads    !=null) nLeads    =overrides.leads;
+  }
+
+  renderGauges(nContracts, nLeads);
+  renderTransformation(nContracts, nLeads);
+  renderBarChart();
+  renderVisibility();
+  renderFormatChart(leads);
+  renderHeader();
+  renderFilterSummary();
+  renderBonus(nContracts);
+}
+
+// ── GAUGES ───────────────────────────────────────
+function renderGauges(c, l){
+  const cr=Math.min(c/TARGETS.contracts,1);
+  const lr=Math.min(l/TARGETS.leads,1);
+
+  const ga=document.getElementById('gContracts');
+  const isDoneC = c>=TARGETS.contracts;
+  ga.setAttribute('stroke-dashoffset',(314.16*(1-cr)).toFixed(2));
+  ga.className.baseVal = 'gauge-fill '+(isDoneC?'done':'gold');
+
+  const gl=document.getElementById('gLeads');
+  const isDoneL = l>=TARGETS.leads;
+  gl.setAttribute('stroke-dashoffset',(314.16*(1-lr)).toFixed(2));
+  gl.className.baseVal = 'gauge-fill '+(isDoneL?'done':'gold2');
+
+  document.getElementById('gContractsVal').textContent = c;
+  document.getElementById('gLeadsVal').textContent     = l;
+  document.getElementById('pbContracts').style.width   = (cr*100).toFixed(0)+'%';
+  document.getElementById('pbLeads').style.width       = (lr*100).toFixed(0)+'%';
+  document.getElementById('pctContracts').textContent  = (cr*100).toFixed(0)+'%';
+  document.getElementById('pctLeads').textContent      = (lr*100).toFixed(0)+'%';
+
+  const remC=Math.max(TARGETS.contracts-c,0);
+  const remL=Math.max(TARGETS.leads-l,0);
+  document.getElementById('remContracts').textContent = remC>0?remC+' contrat'+(remC>1?'s':'')+' restant'+(remC>1?'s':''):'🎉 Objectif atteint !';
+  document.getElementById('remLeads').textContent     = remL>0?remL+' lead'+(remL>1?'s':'')+' restant'+(remL>1?'s':''):'🎉 Objectif atteint !';
+}
+
+// ── TRANSFORMATION ───────────────────────────────
+function renderTransformation(c,l){
+  const pct = l>0?(c/l*100):0;
+  const ps  = pct.toFixed(1).replace('.',',');
+  document.getElementById('tPct').innerHTML    = ps+'<span>%</span>';
+  document.getElementById('tDetail').textContent = c+' contrats ÷ '+l+' leads = '+ps+'%';
+  document.getElementById('tFill').style.width   = Math.min(pct/50*100,100).toFixed(0)+'%';
+  const badge=document.getElementById('tBadge');
+  if(l===0){badge.textContent='Aucun lead sur cette sélection';badge.classList.remove('ok');}
+  else if(pct>=50){badge.textContent='✅ Objectif 50% atteint !';badge.classList.add('ok');}
+  else{badge.textContent='Objectif 50% — il manque '+(50-pct).toFixed(1).replace('.',',')+'pts';badge.classList.remove('ok');}
+}
+
+// ── BAR CHART ────────────────────────────────────
+function renderBarChart(){
+  const container=document.getElementById('barChart');
+  container.innerHTML='';
+  const wks=state.wk==='1'?[1,2,3,4]:state.wk==='2'?[5,6,7,8]:[1,2,3,4,5,6,7,8];
+  const nets=state.net==='all'?['li','fb','ig']:[state.net];
+  const fmts=state.fmt==='all'?['video','interview','edu','photo']:[state.fmt];
+  const colors={li:'#4A90C4',fb:'#6CA8D0',ig:'#9ECDE8'};
+  const netLabels={li:'LinkedIn',fb:'Facebook',ig:'Instagram'};
+  const tt=document.getElementById('tooltip');
+
+  wks.forEach(wNum=>{
+    const future=wNum>6;
+    const row=document.createElement('div');row.className='bar-row';
+    const wkl=document.createElement('div');wkl.className='bar-wk';wkl.textContent=WK_LBL[wNum];
+    const stack=document.createElement('div');stack.className='bar-stack';
+
+    if(future){
+      stack.style.opacity='0.35';
+      const seg=document.createElement('div');
+      seg.style.cssText='width:100%;display:flex;align-items:center;justify-content:center;font-size:9px;color:rgba(255,255,255,0.3);border:1px dashed rgba(255,255,255,0.12);border-radius:5px;';
+      seg.textContent='Planifié';stack.appendChild(seg);
+      const tot=document.createElement('div');tot.className='bar-tot';tot.textContent='—';
+      row.appendChild(wkl);row.appendChild(stack);row.appendChild(tot);
+      container.appendChild(row);return;
+    }
+
+    let total=0;
+    nets.forEach(n=>{
+      const cnt=POSTS.filter(p=>p.wk===wNum&&p.net===n&&fmts.includes(p.fmt)).reduce((s,p)=>s+p.posts,0);
+      if(!cnt)return;
+      total+=cnt;
+      const seg=document.createElement('div');seg.className='bseg';
+      seg.style.cssText=`width:${Math.min(cnt/6*100,50)}%;background:${colors[n]};`;
+      seg.textContent=cnt;
+
+      // Tooltip
+      seg.addEventListener('mouseenter',e=>{
+        tt.textContent=netLabels[n]+' · '+WK_LBL[wNum]+' : '+cnt+' post'+(cnt>1?'s':'');
+        tt.classList.add('show');
+      });
+      seg.addEventListener('mousemove',e=>{tt.style.left=(e.clientX+12)+'px';tt.style.top=(e.clientY-28)+'px';});
+      seg.addEventListener('mouseleave',()=>tt.classList.remove('show'));
+      stack.appendChild(seg);
+    });
+
+    if(!stack.children.length){
+      const empty=document.createElement('div');
+      empty.style.cssText='width:100%;background:rgba(255,255,255,0.03);border-radius:5px;display:flex;align-items:center;padding-left:10px;font-size:9px;color:rgba(255,255,255,0.18);';
+      empty.textContent='Aucun post · ce format';stack.appendChild(empty);
+    }
+    const tot=document.createElement('div');tot.className='bar-tot';tot.textContent=total||'';
+    row.appendChild(wkl);row.appendChild(stack);row.appendChild(tot);
+    container.appendChild(row);
+  });
+}
+
+// ── VISIBILITY ───────────────────────────────────
+function renderVisibility(){
+  const base=VISIBILITY[state.net]||VISIBILITY.all;
+  // Merge overrides (only when no net filter, so numbers stay coherent)
+  const v=state.net==='all'?{
+    views:      overrides.views      ??base.views,
+    impressions:overrides.impressions??base.impressions,
+    followers:  overrides.followers  ??base.followers,
+    ctrLI:      overrides.ctrLI      ??base.ctrLI,
+    ctrFB:      overrides.ctrFB      ??base.ctrFB,
+    ctrIG:      overrides.ctrIG      ??base.ctrIG,
+  }:base;
+
+  document.getElementById('mViews').textContent       = v.views.toLocaleString('fr-FR');
+  document.getElementById('mImpressions').textContent = v.impressions.toLocaleString('fr-FR');
+  document.getElementById('mFollowers').textContent   = '+'+v.followers;
+
+  const setRow=(rid,vid,val)=>{
+    document.getElementById(rid).style.opacity=val?'1':'0.25';
+    document.getElementById(vid).textContent=val||'—';
+  };
+  setRow('rowLI','cLI',v.ctrLI);
+  setRow('rowFB','cFB',v.ctrFB);
+  setRow('rowIG','cIG',v.ctrIG);
+
+  const subs={all:'Visibilité totale · toutes plateformes',li:'LinkedIn uniquement',fb:'Facebook uniquement',ig:'Instagram uniquement'};
+  document.getElementById('viewSub').textContent=subs[state.net]||subs.all;
+}
+
+// ── FORMAT CHART ─────────────────────────────────
+function renderFormatChart(leads){
+  const cnt=f=>leads.filter(l=>l.fmt===f).length;
+  const rows=[
+    {label:'📹 Vidéo',    fmt:'video',    n:cnt('video')},
+    {label:'🎙 Interview',fmt:'interview',n:cnt('interview')},
+    {label:'📚 Éducatif', fmt:'edu',      n:cnt('edu')},
+    {label:'📷 Photo',    fmt:'photo',    n:cnt('photo')},
+  ];
+  const maxN=Math.max(...rows.map(r=>r.n),1);
+  const c=document.getElementById('fmtChart');c.innerHTML='';
+  rows.forEach(r=>{
+    const d=document.createElement('div');d.className='fmt-row';
+    d.innerHTML=`<div class="fmt-name">${r.label}</div><div class="fmt-outer"><div class="fmt-inner" style="width:${(r.n/maxN*100).toFixed(0)}%">${r.n>0?r.n+' lead'+(r.n>1?'s':''):''}</div></div><div class="fmt-n">${r.n}</div>`;
+    c.appendChild(d);
+  });
+  const ins={
+    all:'💡 Les vidéos génèrent 6× plus de leads que les photos — privilégiez ce format.',
+    video:'📹 Vidéo : format le plus performant. ROI maximal sur la cible frontalière.',
+    interview:'🎙 Interviews collaborateurs : fort impact sur la crédibilité et la confiance.',
+    edu:'📚 Contenus éducatifs : notoriété accrue, conversion à renforcer par un CTA.',
+    photo:'📷 Photos : à enrichir avec un texte accrocheur pour améliorer le CTR.',
+  };
+  document.getElementById('fmtInsight').textContent=ins[state.fmt]||ins.all;
+  document.getElementById('fmtSub').textContent=state.fmt==='all'?'Leads générés selon le type de contenu':'Format sélectionné : '+state.fmt;
+}
+
+// ── HEADER ───────────────────────────────────────
+function renderHeader(){
+  const pubWks=[...new Set(POSTS.map(p=>p.wk))].length;
+  document.getElementById('hWeek').textContent ='S'+pubWks+' / S8';
+  document.getElementById('hProg').textContent =Math.round(pubWks/8*100)+'%';
+  document.getElementById('hPosts').textContent=filterPosts().reduce((s,p)=>s+p.posts,0);
+  document.getElementById('footerDate').innerHTML='Semaine '+pubWks+' / 8 · <span style="color:var(--gold2);font-weight:600">'+Math.round(pubWks/8*100)+'% de la campagne</span>';
+}
+
+// ── FILTER SUMMARY ───────────────────────────────
+function renderFilterSummary(){
+  const nl={all:'tous réseaux',li:'LinkedIn',fb:'Facebook',ig:'Instagram'};
+  const fl={all:'tous formats',video:'Vidéo',interview:'Interview',edu:'Éducatif',photo:'Photo'};
+  const wl={all:'toutes semaines','1':'S1→S4','2':'S5→S8'};
+  document.getElementById('filterSummary').textContent='Affichage : '+nl[state.net]+' · '+fl[state.fmt]+' · '+wl[state.wk];
+}
+
+// ── BONUS ────────────────────────────────────────
+function renderBonus(c){
+  const cr=Math.min(c/TARGETS.contracts,1);
+  const rem=Math.max(TARGETS.contracts-c,0);
+  const card=document.getElementById('bonusCard');
+  document.getElementById('bonusFill').style.width=(cr*100).toFixed(0)+'%';
+  document.getElementById('bonusPct').textContent=(cr*100).toFixed(0)+'%';
+
+  if(c>=TARGETS.contracts){
+    card.classList.add('unlocked');
+    document.getElementById('bonusIco').textContent='🎉';
+    document.getElementById('bonusTitle').textContent='Prime collective · DÉBLOQUÉE !';
+    document.getElementById('bonusRem').textContent='— Objectif atteint, prime distribuée !';
+    document.getElementById('bonusStatus').textContent='✅ Débloqué';
+  } else {
+    card.classList.remove('unlocked');
+    document.getElementById('bonusIco').textContent='🏆';
+    document.getElementById('bonusTitle').textContent='Prime collective · Chèque cadeau partagé';
+    document.getElementById('bonusRem').textContent='— '+rem+' contrat'+(rem>1?'s':'')+' pour débloquer';
+    document.getElementById('bonusStatus').textContent='En cours ⏳';
+  }
+}
+
+// ── INIT ─────────────────────────────────────────
+render();
+</script>
+</script>
+</body>
+</html>
